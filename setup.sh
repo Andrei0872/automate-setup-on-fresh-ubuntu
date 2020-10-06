@@ -188,5 +188,13 @@ function installGimp {
   echo
 }
 
+function installTweaks {
+  format_output "installing tweaks"
+
+  sudo apt install -y gnome-tweak-tool
+
+  echo
+}
+
 functions="$(cat $0 | egrep -o install[A-Z]+[A-Za-z]+)"
 for f in $functions; do $f;done
