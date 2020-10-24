@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# could be invoked as `bash install $HOME`
-
 if [ "$#" == 0 ] 
 then
   echo "must provide the user's home"
@@ -37,6 +35,9 @@ function installGit {
 
   sudo apt install -y git
 
+  git config --global user.name "Andrei Gatej"
+  git config --global user.email "andreigtj01@gmail.com"
+
   echo
 }
 
@@ -51,9 +52,9 @@ function installZsh {
 
   cp "$users_home"/.oh-my-zsh/templates/zshrc.zsh-template "$users_home"/.zshrc
 
-  chsh -s /bin/zsh
+  sudo chsh -s /bin/zsh
 
-  syntax highlighting
+#  syntax highlighting
 
   git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "$users_home/.zsh-syntax-highlighting" --depth 1
 
@@ -67,23 +68,18 @@ function installChrome {
 
   wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 
-  sudo apt install ./google-chrome-stable_current_amd64.deb
+  sudo apt install -y ./google-chrome-stable_current_amd64.deb
 
   rm -rf ./google-chrome-stable_current_amd64.deb
 
   echo
 }
 
-function installVsCode {
-  format_output "installing VS Code"
+# !
+function installVsCodeInsiders {
+  format_output "installing VS Code Insiders"
 
-  wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key add -
-
-  sudo add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
-
-  sudo apt update
-
-  sudo apt install -y code
+  sudo snap install code-insiders --classic
 
   echo
 }
@@ -101,8 +97,8 @@ function installGolang {
   sudo mv go /usr/local
 
   cat >> "$users_home/.zshrc" <<EOL
-  export GOROOT=/usr/local/go
-  export GOPATH=$HOME/go
+export GOROOT=/usr/local/go
+export GOPATH=$users_home/go
 EOL
 
   echo "export PATH=$GOPATH/bin:$GOROOT/bin:$PATH" >> "$users_home/.zshrc"
@@ -122,11 +118,29 @@ function installCurl {
 function installDocker {
   format_output "installing docker"
 
-  curl -s https://get.docker.com/ | bash
+  sudo apt-get update
 
-  usermod -aG docker $user
+	sudo apt-get install \
+	 	apt-transport-https \
+		  ca-certificates \
+		  curl \
+		  gnupg-agent \
+		  software-properties-common
+		  
+  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+		
+  sudo apt-key fingerprint 0EBFCD88
+		
+  sudo add-apt-repository \
+    "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+    $(lsb_release -cs) \
+    stable"
+    
+    sudo apt-get update
+    
+    sudo apt-get install docker-ce docker-ce-cli containerd.io
 
-  su - $user
+    usermod -aG docker $user
 
   echo
 }
@@ -150,8 +164,9 @@ function installSlack {
   
   wget https://downloads.slack-edge.com/linux_releases/slack-desktop-4.0.2-amd64.deb
 
-
   sudo apt install -y ./slack-desktop-*.deb
+  
+  rm -rf ./slack-desktop-*.deb
 
   echo
 }
@@ -167,15 +182,7 @@ function installPostman {
 function installBrave {
   format_output "installing brave browser"
 
-  sudo apt -y install curl software-properties-common apt-transport-https 
-
-  curl -s https://brave-browser-apt-release.s3.brave.com/brave-core.asc | sudo apt-key --keyring /etc/apt/trusted.gpg.d/brave-browser-release.gpg add -
-
-  echo "deb [arch=amd64] https://brave-browser-apt-release.s3.brave.com/ stable main" | sudo tee /etc/apt/sources.list.d/brave-browser-release.list
-
-  sudo apt update
-
-  sudo apt install -y brave-browser
+  sudo snap install brave
 
   echo
 }
@@ -195,6 +202,15 @@ function installTweaks {
 
   echo
 }
+
+function installDiscord {
+  format_output "installing Discord"
+
+  sudo snap install discord
+
+  echo
+}
+
 
 functions="$(cat $0 | egrep -o install[A-Z]+[A-Za-z]+)"
 for f in $functions; do $f;done
